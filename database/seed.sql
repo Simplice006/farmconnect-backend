@@ -1,6 +1,8 @@
 USE farmconnect;
 
 SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE inquiry_replies;
+TRUNCATE TABLE product_reviews;
 TRUNCATE TABLE audit_logs;
 TRUNCATE TABLE favorites;
 TRUNCATE TABLE inquiries;
@@ -73,3 +75,11 @@ INSERT INTO favorites (buyer_id, product_id) VALUES
 (5, 2),
 (6, 7),
 (7, 4);
+
+-- Sample data for the new features. Buyer 8 has a completed order for product 10, so this review is valid.
+INSERT INTO product_reviews (product_id, buyer_id, rating, comment) VALUES
+(10, 8, 5, 'Milk arrived chilled and on time. Will order again.');
+
+INSERT INTO inquiry_replies (inquiry_id, sender_id, message) VALUES
+(2, 4, 'Yes, the last reading was 11.5% moisture. I can share the certificate.'),
+(2, 6, 'Great, please send it to my phone number.');

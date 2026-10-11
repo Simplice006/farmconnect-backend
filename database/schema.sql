@@ -2,6 +2,8 @@ CREATE DATABASE IF NOT EXISTS farmconnect;
 USE farmconnect;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS inquiry_replies;
+DROP TABLE IF EXISTS product_reviews;
 DROP TABLE IF EXISTS audit_logs;
 DROP TABLE IF EXISTS favorites;
 DROP TABLE IF EXISTS inquiries;
@@ -128,4 +130,30 @@ CREATE TABLE audit_logs (
   details TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_audit_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- Added for the Product Reviews feature (a buyer can review a product once, after a completed order).
+CREATE TABLE product_reviews (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_id INT NOT NULL,
+  buyer_id INT NOT NULL,
+  rating TINYINT NOT NULL,
+  comment TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_review (product_id, buyer_id),
+  CONSTRAINT chk_review_rating CHECK (rating BETWEEN 1 AND 5),
+  CONSTRAINT fk_review_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  CONSTRAINT fk_review_buyer FOREIGN KEY (buyer_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Added for the Inquiry Replies feature (a conversation between the buyer and the farmer).
+CREATE TABLE inquiry_replies (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  inquiry_id INT NOT NULL,
+  sender_id INT NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_reply_inquiry FOREIGN KEY (inquiry_id) REFERENCES inquiries(id) ON DELETE CASCADE,
+  CONSTRAINT fk_reply_sender FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE
 );
