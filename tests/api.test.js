@@ -37,6 +37,16 @@ test("original workflow: login and browsing still work", async () => {
   assert.ok(products.data.products.length >= 10);
 });
 
+test("original workflow: buyer orders, farmer updates the status", async () => {
+  const created = await call("POST", "/orders", buyer1, { product_id: 3, quantity_requested: 2, delivery_option: "pickup" });
+  assert.strictEqual(created.status, 201);
+  const farmerOrders = await call("GET", "/orders/farmer", farmer1);
+  assert.ok(farmerOrders.data.orders.some((o) => o.id === created.data.id));
+  const updated = await call("PUT", `/orders/${created.data.id}/status`, farmer1, { status: "cancelled" });
+  assert.strictEqual(updated.status, 200);
+  assert.strictEqual((await call("PUT", `/orders/${created.data.id}/status`, farmer3, { status: "accepted" })).status, 403);
+});
+
 // ---------- Feature 1: favorites ----------
 test("favorites: requires login and the buyer role", async () => {
   assert.strictEqual((await call("GET", "/favorites")).status, 401);

@@ -191,3 +191,42 @@ Product image uploads use Multer in `middleware/uploadMiddleware.js`. Images are
 - `GET /api/admin/products`: List all products.
 - `GET /api/admin/orders`: List all orders.
 - `PUT /api/admin/users/:id/status`: Activate or deactivate a user.
+
+## New Features (assignment extension)
+
+Three features were added on top of the original commit `be248854e5396604c6b0fe82e5bb6c74f2b9a563`.
+
+| Feature | Endpoints | Tables |
+| --- | --- | --- |
+| Database-backed favorites | `GET/POST /api/favorites`, `DELETE /api/favorites/:productId` (buyer) | `favorites` (already in the schema) |
+| Product reviews and ratings | `GET /api/reviews/product/:id` (public), `GET .../eligibility`, `POST /api/reviews/product/:id` (buyer, completed order only), `DELETE /api/reviews/:id` (owner or admin) | `product_reviews` (new) |
+| Inquiry replies | `GET/POST /api/inquiries/:id/replies` (buyer or farmer of that inquiry; admin may read) | `inquiry_replies` (new) |
+
+### Database setup for the new features
+
+- **Fresh database:** `schema.sql` and `seed.sql` already include the new tables and sample data. WARNING: `schema.sql` drops and recreates all tables.
+- **Existing database (keep your data):** run only the migration:
+
+```bash
+mysql -u <user> -p farmconnect < database/migrations/001_add_reviews_and_inquiry_replies.sql
+```
+
+### Run the automated tests
+
+Start the backend (`npm start`) with the seeded database, then in another terminal:
+
+```bash
+npm test
+```
+
+The tests call the running API (override with `API_URL`) and expect the seed data. Re-run `seed.sql` to reset.
+
+### Setup problem encountered
+
+On MariaDB, `root` often uses socket authentication, so the Node app gets `Access denied for user 'root'@'localhost'`. Fix: create a dedicated user and put it in `.env`:
+
+```sql
+CREATE USER 'fc_app'@'localhost' IDENTIFIED BY 'choose_a_password';
+GRANT ALL ON farmconnect.* TO 'fc_app'@'localhost';
+FLUSH PRIVILEGES;
+```
